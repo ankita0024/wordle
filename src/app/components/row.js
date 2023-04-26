@@ -1,6 +1,8 @@
-export default function Row({key,guess,n}) {
+export default function Row({guess,n}) {
   let letters= "";
-  if(guess){
+  const arrayLength = Math.max(n - letters.length, 0);
+
+  if(guess && guess.length){
      letters = guess.split('');
   }
     return (
@@ -10,7 +12,7 @@ export default function Row({key,guess,n}) {
           {letter}
         </div>
       ))}
-      {[...Array(n - letters.length)].map((_, i) => (
+      {[...Array(arrayLength)].map((_, i) => (
         <div key={i} className="bg-gray-300 w-8 h-8 rounded-lg mr-2 mb-2"></div>
       ))}
     </div>

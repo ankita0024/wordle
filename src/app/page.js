@@ -3,19 +3,37 @@
 import Board from "./components/board";
 import Keyboard from "./components/keyboard";
 import { useEffect, useState } from "react";
-import solution from "./solution.json";
 import Modal from "./components/modal";
 import Settings from "./components/settings";
+
+const Colors = {
+  GREY: 'grey',
+  GREEN: 'green',
+  YELLOW: 'yellow'
+};
+
 
 export default function Home() {
   const [live, setLive] = useState(0);
   const [guess, setGuess] = useState("");
   const [usedWord, setUsedWord] = useState([]);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [result, setResult] = useState(false);
   const [error, setError] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [numberOfGuess, setNumberOfGuess] = useState(5);
-  const [guesses, setGuesses] = useState([...Array(numberOfGuess + 1)]);
+  const [guesses, setGuesses] = useState([]);
+  const [pressedKeys, setPressedKeys] = useState({}) 
+  const [correctWord, setCorrectWord] = useState([])
+
+  useEffect(() => {
+    (async function() {
+      await fetch(`https://random-word-api.herokuapp.com/word?length=5`).then(response=>
+      {
+        setCorrectWord(response[0])
+      })
+      
+    })()
+  }, [setCorrectWord])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   function eventHandler(event) {
@@ -32,7 +50,6 @@ export default function Home() {
       }
       const formatted = editGuess();
       addGuess(formatted);
-      console.log(formatted);
     }
     if (event.toUpperCase() === "BACKSPACE" || event === "DELETE") {
       setGuess((prev) => prev.slice(0, -1));
@@ -44,63 +61,96 @@ export default function Home() {
       }
     }
   }
+
   useEffect(() => {
     setGuesses([...Array(numberOfGuess + 1)]);
   }, [numberOfGuess]);
+
+
   function addGuess(formattedGuess) {
-    if (guess === solution) {
-      setIsCorrect(true);
+    if (guess === correctWord) {
+      setResult(true);
     }
     setGuesses((prevGuesses) => {
       let newGuesses = [...prevGuesses];
       newGuesses[live] = formattedGuess;
       return newGuesses;
     });
-    setHistory((prevHistory) => {
-      return [...prevHistory, currentGuess];
+    setUsedWord((prevHistory) => {
+      return [...prevHistory, guess];
     });
     setLive((prevLive) => {
       return prevLive + 1;
     });
+    setPressedKeys(pressedKeys => {
+      formattedGuess.forEach(letter => {
+        const currentColor = pressedKeys[letter.key]
+
+        if (letter.color === Colors.GREEN) {
+          pressedKeys[letter.key] = Colors.GREEN
+          return
+        }
+        if (letter.color === Colors.YELLOW && currentColor !== Colors.GREEN) {
+          pressedKeys[letter.key] =  Colors.YELLOW
+          return
+        }
+        if (letter.color === Colors.GREY && currentColor !== (Colors.GREEN ||  Colors.YELLOW)) {
+          pressedKeys[letter.key] = Colors.GREY
+          return
+        }
+      })
+
+      return pressedKeys
+    })
     setGuess("");
   }
 
   function editGuess() {
-    let solutionArray = [...solution];
-    let formattedGuess = [...guess].map((l) => {
-      return { key: l, color: "grey" };
+    let correctWordArray = [...correctWord];
+    let formattedGuess = [...guess].map((letter) => {
+      return { key: letter, color: Colors.GREY };
     });
 
-    formattedGuess.forEach((l, i) => {
-      if (solution[i] === l.key) {
-        formattedGuess[i].color = "green";
-        solutionArray[i] = null;
+    formattedGuess.forEach((letter, i) => {
+      if (correctWord[i] === letter.key) {
+        formattedGuess[i].color = Colors.GREEN;
+        correctWordArray[i] = null;
       }
     });
 
-    formattedGuess.forEach((l, i) => {
-      if (solutionArray.includes(l.key) && l.color !== "green") {
-        formattedGuess[i].color = "yellow";
-        solutionArray[solutionArray.indexOf(l.key)] = null;
+    formattedGuess.forEach((letter, i) => {
+      if (correctWordArray.includes(letter.key) && letter.color !== Colors.GREEN) {
+        formattedGuess[i].color =  Colors.YELLOW;
+        correctWordArray[correctWordArray.indexOf(letter.key)] = null;
       }
     });
 
     return formattedGuess;
   }
-
   useEffect(() => {
-    const listener = (event) => {
-      if (event) {
-        eventHandler(event.key);
-      }
-    };
-    window.addEventListener("keyup", listener);
-  }, [eventHandler]);
+    window.addEventListener('keyup', eventHandler)
+    if (result) {
+      window.removeEventListener('keyup', eventHandler)
+    }
+    if (live > 5) {
+      window.removeEventListener('keyup', eventHandler)
+    }
+    return () => window.removeEventListener('keyup', eventHandler)
+  }, [eventHandler,live,result])
+  // useEffect(() => {
+  //   const listener = (event) => {
+  //     if (event) {
+  //       eventHandler(event.key);
+  //     }
+  //   };
+  //   window.addEventListener("keyup", listener);
+  // }, [eventHandler]);
   function onClose(selectedValue) {
     setNumberOfGuess(selectedValue);
     setModalVisible(false);
   }
   return (
+    <>{correctWord && 
     <main className="flex flex-col h-full gap-4 font-sans bg-gradient-to-b from-gray-200 to-transparent">
       <div className="pb-6 flex justify-between pt-8 text-4xl border-b border-gray-300 bg-gradient-to-b ">
         <div className="flex-1 flex justify-center items-center">Wordle</div>
@@ -108,7 +158,7 @@ export default function Home() {
           <Settings onClick={() => setModalVisible(true)} />
         </div>
       </div>
-      {error && (
+      {error && !result && (
         <div
           class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
           role="alert"
@@ -116,12 +166,22 @@ export default function Home() {
           <strong class="font-bold">Duplicate value!!</strong>
         </div>
       )}
+      {result && !error && (
+       <div class="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert">
+       <div class="flex">
+         <div>
+           <p class="font-bold">Winner Winner Chicken Dinner</p>
+         </div>
+       </div>
+     </div>
+      )}
       {modalVisible && (
         <Modal onClick={onClose} numberOfGuess={numberOfGuess} />
       )}
       <Board guesses={guesses} guess={guess} live={live} n={numberOfGuess} />
-      <Keyboard onClick={eventHandler} />
-      <div className="pb-6 pt-10 self-center text-xl">By Ankita Gupta</div>
-    </main>
+      <Keyboard onClick={eventHandler}  pressedKeys={pressedKeys}/>
+      <div className="pb-6 pt-10 self-center text-l">By Ankita Gupta</div>
+    </main>}
+    </>
   );
 }

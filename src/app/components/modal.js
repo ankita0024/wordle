@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function Modal({ onClick,numberOfGuess }) {
+function Modal({ onClick,numberOfGuess}) {
   const [selectedValue, setSelectedValue] = useState(numberOfGuess);
 
   function handleClose() {

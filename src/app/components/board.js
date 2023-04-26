@@ -5,6 +5,9 @@ export default function Board({guesses, guess,live,n}) {
     <div className="mt-16">
     {guesses.map((g, i) => {
       console.log("g----",g);
+      console.log("guess----",guess);
+      console.log("i----",i);
+      console.log("live----",live);
       if (live === i) {
         return <Row key={i} guess={guess} n={n} />;
       }
