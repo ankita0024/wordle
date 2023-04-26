@@ -1,21 +1,27 @@
 import React from "react";
+import { useEffect, useState } from "react";
 
 function Key(props) {
+  const handleClick = (event) => {
+    console.log("clickedd");
+    props.onClick(props.value);
+  };
+
   return (
     <button
       className="bg-gray-800 text-white font-bold py-2 px-4 rounded uppercase m-0.5"
-      onClick={""}
+      onClick={handleClick}
     >
       {props.value}
     </button>
   );
 }
 
-function Keyboard(props) {
+function Keyboard({ onClick }) {
   const rows = [
     ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
     ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-    ["ENTER","Z", "X", "C", "V", "B", "N", "M","DELETE"],
+    ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "DELETE"],
   ];
 
   return (
@@ -23,15 +29,10 @@ function Keyboard(props) {
       {rows.map((row, index) => (
         <div className="flex justify-center" key={index}>
           {row.map((key) => (
-            <Key key={key} value={key} onClick={props.onClick} />
+            <Key onClick={onClick} key={key} value={key} />
           ))}
         </div>
       ))}
-      {/* <div className="flex justify-between mt-4">
-        <Key value="Enter" onClick={""} />
-        <div className="w-16"></div>
-        <Key value="Delete" onClick={""} />
-      </div> */}
     </div>
   );
 }
