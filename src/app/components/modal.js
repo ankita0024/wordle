@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 
-function Modal({ onClick,numberOfGuess }) {
+function Modal({ onClose,numberOfGuess,onCancel }) {
   const [selectedValue, setSelectedValue] = useState(numberOfGuess);
 
   function handleClose() {
-    onClick(selectedValue);
+    onClose(selectedValue);
   }
   function handleCancel() {
-    onClick(numberOfGuess)
+    onCancel(numberOfGuess)
   }
   const handleNumberChange = (e) => {
     if (e.target.value >= 5 && e.target.value <= 8) {
