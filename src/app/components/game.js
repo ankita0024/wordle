@@ -5,6 +5,7 @@ import Keyboard from "./keyboard";
 import { useEffect, useState } from "react";
 import Modal from "./modal";
 import Settings from "./settings";
+import Alert from "./alert";
 
 const Colors = {
   GREY: "bg-gray-600",
@@ -16,6 +17,7 @@ export default function Game({ correctWord, fetchData }) {
   const [live, setLive] = useState(0);
   const [guess, setGuess] = useState("");
   const [usedWord, setUsedWord] = useState([]);
+  const [pressedKeys, setPressedKeys] = useState({})
   const [isCorrect, setIsCorrect] = useState(false);
   const [error, setError] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -44,16 +46,17 @@ export default function Game({ correctWord, fetchData }) {
     }
     if (/^[A-Za-z]$/.test(key)) {
       if (guess.length < numberOfGuess) {
-        setGuess((prev) => prev + key);
+        setGuess((prev) => prev + key.toUpperCase());
       }
     }
+    setError(false)
   }
   useEffect(() => {
     setGuesses([...Array(numberOfGuess + 1)]);
   }, [numberOfGuess]);
 
   function addGuess(formattedGuess) {
-    if (guess === correctWord) {
+    if (guess.toUpperCase() === correctWord) {
       setIsCorrect(true);
     }
     setGuesses((prevGuesses) => {
@@ -61,15 +64,34 @@ export default function Game({ correctWord, fetchData }) {
       newGuesses[live] = formattedGuess;
       return newGuesses;
     });
-    setUsedWord((prevHistory) => {
-      return [...prevHistory, guess];
+    setUsedWord((prevUsedWord) => {
+      return [...prevUsedWord, guess];
     });
     setLive((prevLive) => {
       return prevLive + 1;
     });
+    setPressedKeys(prevPressedKeys => {
+      formattedGuess.forEach(letter => {
+        const currentColor = prevPressedKeys[letter.key]
+
+        if (letter.color === Colors.GREEN) {
+          prevPressedKeys[letter.key] = Colors.GREEN
+          return
+        }
+        if (letter.color === Colors.YELLOW && currentColor !== Colors.GREEN) {
+          prevPressedKeys[letter.key] = Colors.YELLOW
+          return
+        }
+        if (letter.color ===  Colors.GREY && currentColor !== (Colors.GREEN || Colors.YELLOW)) {
+          prevPressedKeys[letter.key] = Colors.GREY
+          return
+        }
+      })
+
+      return prevPressedKeys
+    })
     setGuess("");
   }
-
 
   function editGuess() {
     let correctWordArray = correctWord.split("");
@@ -115,6 +137,8 @@ export default function Game({ correctWord, fetchData }) {
   function onClose(selectedValue) {
     setNumberOfGuess(selectedValue);
     setModalVisible(false);
+    setIsCorrect(false);
+    setError(false);
     apiCall(selectedValue);
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -122,6 +146,10 @@ export default function Game({ correctWord, fetchData }) {
     setNumberOfGuess(numberOfGuess);
     setModalVisible(false);
   }
+
+function clickPlay(){
+
+}
 
   return (
     <main className="flex flex-col h-full gap-4 font-sans bg-gradient-to-b from-gray-200 to-transparent">
@@ -131,14 +159,7 @@ export default function Game({ correctWord, fetchData }) {
           <Settings onClick={() => setModalVisible(true)} />
         </div>
       </div>
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <strong className="font-bold">Duplicate value!!</strong>
-        </div>
-      )}
+       <Alert isCorrect={isCorrect} error={error} clickPlay={clickPlay}/>
       {modalVisible && (
         <Modal
           onClose={onClose}
@@ -147,8 +168,8 @@ export default function Game({ correctWord, fetchData }) {
         />
       )}
       <Board guesses={guesses} currentGuess={guess} live={live} n={numberOfGuess} />
-      <Keyboard onKeyPress={eventHandler} />
-      <div className="pb-6 pt-10 self-center text-xl">By Ankita Gupta</div>
+      <Keyboard onKeyPress={eventHandler} pressedKeys={pressedKeys} />
+      <div className="pb-6 pt-10 self-center text-l">By Ankita Gupta</div>
     </main>
   );
 }

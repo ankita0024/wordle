@@ -17,9 +17,7 @@ function Modal({ onClose,numberOfGuess,onCancel }) {
   return (
     <div className={`fixed inset-0 bg-gray-500 bg-opacity-50`}>
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-md shadow-md">
-        <div className="sm:flex sm:items-start">
-          <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 ">
               Select a value within range of 5 to 8
             </h3>
             <div className="mt-4 flex justify-center pb-6">
@@ -30,12 +28,10 @@ function Modal({ onClose,numberOfGuess,onCancel }) {
                 value={selectedValue}
                 min="5"
                 max="8"
-                className="w-16 text-center text-gray-700 font-semibold focus:outline-none focus:text-gray-900"
+                className="w-16 text-center text-gray-700 font-semibold focus:outline-none focus:text-gray-900  border-b border-4"
                 onChange={handleNumberChange}
               />
             </div>
-          </div>
-        </div>
         <div className="flex justify-center">
           <button
             onClick={handleCancel}
