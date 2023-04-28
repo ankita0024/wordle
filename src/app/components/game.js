@@ -2,7 +2,7 @@
 
 import Board from "./board";
 import Keyboard from "./keyboard";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Modal from "./modal";
 import Settings from "./settings";
 import Alert from "./alert";
@@ -19,19 +19,20 @@ export default function Game({ correctWord, fetchData }) {
   const [usedWord, setUsedWord] = useState([]);
   const [pressedKeys, setPressedKeys] = useState({})
   const [isCorrect, setIsCorrect] = useState(false);
-  const [error, setError] = useState(false);
+  const [duplicate, setDuplicate] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [numberOfGuess, setNumberOfGuess] = useState(5);
   const [guesses, setGuesses] = useState([...Array(6)]);
-
+  const [isFailed, setIsFailed] = useState(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  function eventHandler({ key }) {
+  function eventHandler({key}) {
     if (key.toUpperCase() === "ENTER") {
       if (live > numberOfGuess) {
         return;
       }
       if (usedWord.includes(guess)) {
-        setError(true);
+        setDuplicate(true);
+        setGuess("");
         return;
       }
       if (guess.length !== numberOfGuess) {
@@ -49,7 +50,7 @@ export default function Game({ correctWord, fetchData }) {
         setGuess((prev) => prev + key.toUpperCase());
       }
     }
-    setError(false)
+    setDuplicate(false);
   }
   useEffect(() => {
     setGuesses([...Array(numberOfGuess + 1)]);
@@ -58,6 +59,8 @@ export default function Game({ correctWord, fetchData }) {
   function addGuess(formattedGuess) {
     if (guess.toUpperCase() === correctWord) {
       setIsCorrect(true);
+    } else {
+      setIsCorrect(false);
     }
     setGuesses((prevGuesses) => {
       let newGuesses = [...prevGuesses];
@@ -91,6 +94,7 @@ export default function Game({ correctWord, fetchData }) {
       return prevPressedKeys
     })
     setGuess("");
+   
   }
 
   function editGuess() {
@@ -123,33 +127,37 @@ export default function Game({ correctWord, fetchData }) {
   useEffect(() => {
     window.addEventListener("keyup", eventHandler);
     if (isCorrect) {
-        window.removeEventListener('keyup', eventHandler)
+        window.removeEventListener('keyup', eventHandler);
       }
       if (live > numberOfGuess) {
         window.removeEventListener('keyup', eventHandler)
       }
+      const noChancesLeft = guesses.every((g)=> typeof g !== 'undefined' || (Array.isArray(g) && g.length !== 0));
+      if(noChancesLeft){
+        setIsFailed(true);
+      } else{
+        setIsFailed(false);
+      }
     return () => window.removeEventListener("keyup", eventHandler);
-  }, [eventHandler,isCorrect,live]);
+  }, [eventHandler, isCorrect, live, numberOfGuess,guesses]);
 
-
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  function onClose(selectedValue) {
-    setNumberOfGuess(selectedValue);
-    setModalVisible(false);
-    setIsCorrect(false);
-    setError(false);
-    apiCall(selectedValue);
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   function onCancel() {
     setNumberOfGuess(numberOfGuess);
     setModalVisible(false);
   }
 
-function clickPlay(){
-
-}
+  function refresh(guessCount = 5){
+    setNumberOfGuess(guessCount);
+    setModalVisible(false);
+    setIsCorrect(false);
+    setDuplicate(false);
+    apiCall(guessCount);
+    setPressedKeys({});
+    setLive(0);
+    setUsedWord([]);
+    setGuess("");
+    setGuesses([...Array(guessCount + 1)]);
+  }
 
   return (
     <main className="flex flex-col h-full gap-4 font-sans bg-gradient-to-b from-gray-200 to-transparent">
@@ -159,10 +167,10 @@ function clickPlay(){
           <Settings onClick={() => setModalVisible(true)} />
         </div>
       </div>
-       <Alert isCorrect={isCorrect} error={error} clickPlay={clickPlay}/>
+      <Alert isCorrect={isCorrect} duplicate={duplicate} isFailed={isFailed} correctWord={correctWord} clickPlay={()=> refresh(numberOfGuess)}/>
       {modalVisible && (
         <Modal
-          onClose={onClose}
+          onClose={(selectedValue) => refresh(selectedValue)}
           onCancel={onCancel}
           numberOfGuess={numberOfGuess}
         />

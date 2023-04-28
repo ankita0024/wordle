@@ -26,11 +26,9 @@ export default function Row({currentGuess,n,guess}) {
   
     return (
       <div className="flex items-center row justify-center">
-        <div className="bg-gray-300 w-8 h-8 rounded-lg mr-2 mb-2"></div>
-        <div className="bg-gray-300 w-8 h-8 rounded-lg mr-2 mb-2"></div>
-        <div className="bg-gray-300 w-8 h-8 rounded-lg mr-2 mb-2"></div>
-        <div className="bg-gray-300 w-8 h-8 rounded-lg mr-2 mb-2"></div>
-        <div className="bg-gray-300 w-8 h-8 rounded-lg mr-2 mb-2"></div>
-      </div>
+      {[...Array(n)].map((_,i) => (
+        <div key={i} className="bg-gray-300 w-8 h-8 rounded-lg mr-2 mb-2"></div>
+      ))}
+   </div>
     )
 }
