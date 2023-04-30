@@ -20,17 +20,22 @@ You can start editing the page by modifying `app/page.js`. The page auto-updates
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-## Learn More
+## Wordle App with new features 
 
-To learn more about Next.js, take a look at the following resources:
+Wordle is a simple game in which you have to guess a 5 to 8 letter (n) word. You get (n+1) guesses,
+learning a little more information with each guess, and eventually narrow your guesses down to
+find the answer.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## TradeOffs
+> My first ever project in Next.js, required bit of a hands on!! But enjoyed working on it!
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+> Started with Basic UI structure, designed it using Tail wind css. Again, never worked on Tailwind before but was easy to get going with it using its documentation.
 
-## Deploy on Vercel
+> For store, used Redux + Thunk, saving valid word gusses coming in chunks from API, arraning those chunks, handling edge cases and randomly fetching a valid word of number of selected letter.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+> Duplicate check added with Alert messages
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+> Store fetching word list from my own created API using AWS dynamo, again for the first time. Really enjoyed working on AWS :) 
+
+Hope you enjoy the game!!
+

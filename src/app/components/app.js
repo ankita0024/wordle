@@ -1,7 +1,7 @@
 "use client";
 
 import Game from "../components/game";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchWords } from '../store/action';
 
